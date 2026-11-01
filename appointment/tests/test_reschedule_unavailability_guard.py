@@ -144,3 +144,15 @@ class ConfirmRescheduleUnavailabilityGuardTests(BaseTest):
         self.assertEqual(self.client.get(self.url).status_code, 302)
         self.assert_moved()
         notify.assert_called_once()
+
+    @patch('appointment.views.notify_admin_about_reschedule')
+    def test_rejection_log_omits_confirmation_token(self, notify):
+        self.block(time(10), time(11))
+        with self.assertLogs('appointment.views', level='WARNING') as logs:
+            response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 409)
+        rejection_logs = [line for line in logs.output if 'rejected' in line]
+        self.assertEqual(len(rejection_logs), 1)
+        self.assertIn(f"Reschedule {self.pending.pk} rejected", rejection_logs[0])
+        for line in logs.output:
+            self.assertNotIn(self.pending.id_request, line)

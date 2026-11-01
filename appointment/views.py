@@ -647,7 +647,7 @@ def confirm_reschedule(request, id_request):
 
     if staff_unavailability_overlaps(reschedule_history.staff_member, reschedule_history.date,
                                      reschedule_history.start_time, reschedule_history.end_time):
-        logger.warning(f"Reschedule {id_request} rejected: requested time overlaps a staff unavailability")
+        logger.warning(f"Reschedule {reschedule_history.pk} rejected: requested time overlaps a staff unavailability")
         error_message = _("Sorry, the requested time is no longer available. Your appointment has not been changed; "
                           "please choose another time.")
         context = get_generic_context_with_extra(request, {"error_message": error_message}, admin=False)

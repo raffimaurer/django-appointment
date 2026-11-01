@@ -53,9 +53,9 @@ All commands run from the repo root with `DJANGO_SETTINGS_MODULE=appointments.de
 | Before (base source) | `.venv/bin/python manage.py test appointment` | Ran 576, **FAILED (failures=3, skipped=3)** |
 | New tests vs base `views.py` (helper present, view unchanged; temporary worktree) | `... manage.py test appointment.tests.test_reschedule_unavailability_guard -v 2` | Ran 10, **FAILED (failures=4)**: containment, inside-slot, unmocked-email, replay-after-rejection (each `302 != 409`) |
 | After | `.venv/bin/python manage.py test appointment.tests.test_incident_reschedule -v 2` | Ran 7, **OK** |
-| After | `.venv/bin/python manage.py test appointment.tests.test_reschedule_unavailability_guard -v 2` | Ran 10, **OK** |
+| After | `.venv/bin/python manage.py test appointment.tests.test_reschedule_unavailability_guard -v 2` | Ran 11, **OK** (10 original + 1 log-redaction test, §8) |
 | After | `.venv/bin/python manage.py test appointment.tests.test_views.ConfirmRescheduleViewTests appointment.tests.test_views.RescheduleAppointmentSubmitViewTests` | Ran 9, **OK** |
-| After | `.venv/bin/python manage.py test appointment` | Ran **586**, **OK (skipped=3)**, 0 failures, 0 errors |
+| After | `.venv/bin/python manage.py test appointment` | Ran **587**, **OK (skipped=3)**, 0 failures, 0 errors (after the §8 review correction; 586 before it) |
 | Lint | `flake8 --max-line-length 120` on changed lines / new test file | no findings on new code (pre-existing findings elsewhere in `views.py`/`db_helpers.py` untouched) |
 
 Failing assertion before the fix (excerpt):
@@ -70,7 +70,7 @@ FAIL: test_real_submit_then_block_then_confirm AssertionError: datetime.date(202
 Ran 7 tests ... FAILED (failures=3)
 ```
 
-The 586 total is the 576 baseline plus 10 new tests. The 7 incident acceptance tests are unmodified.
+The 587 total is the 576 baseline plus 11 new tests. The 7 incident acceptance tests are unmodified.
 
 New coverage (`appointment/tests/test_reschedule_unavailability_guard.py`):
 - Helper: half-open table (adjacent before/after allowed; identical, start-overlap, end-overlap, inside, containing
@@ -130,9 +130,10 @@ Line numbers refer to this branch.
 7. On rejection, assert that *every* field of every touched row is unchanged, not just one field.
 8. Cover expiry with real time manipulation (backdate `created_at`), and cover replay after success and after rejection.
 9. Prove each new test is meaningful by running it against the unfixed source.
-10. Do not claim race safety from sequential SQLite tests. Write down the transaction/locking assumptions and leave
+10. Never log bearer tokens (`id_request` confirmation links, reset tokens). Log row PKs instead and prove it with an `assertLogs` test.
+11. Do not claim race safety from sequential SQLite tests. Write down the transaction/locking assumptions and leave
     them as an explicit risk.
-11. Time-box the adjacent audit. Separate *reproduced* from *suspected*, and keep unrelated fixes out of the incident PR.
+12. Time-box the adjacent audit. Separate *reproduced* from *suspected*, and keep unrelated fixes out of the incident PR.
 
 ## 7. Draft Devin Skill (not yet saved or verified across sessions)
 
@@ -149,4 +150,30 @@ description: Investigate and repair booking/reschedule bugs where a commit step 
 6. Run the targeted tests and the full suite, and report exact counts and skips.
 7. Audit sibling flows (new booking, submit, confirm, cancel, slot listing) with throwaway repro tests. Report reproduced vs inspected, with file:line, impact and next action. Do not broaden the fix.
 8. Never claim concurrency safety from SQLite tests; record transaction/locking gaps.
+9. Never put confirmation/reset tokens (e.g. `id_request`) in log lines or error messages; log the row PK and add an `assertLogs` test.
 ```
+
+## 8. Devin Review finding and correction (CWE-532)
+
+- **Finding:** Devin Review on the draft PR flagged "Reschedule confirmation token leaked to logs" (CWE-532) at
+  `appointment/views.py:650`. The original fix commit added
+  `logger.warning(f"Reschedule {id_request} rejected: ...")`. `id_request` is the bearer token in the
+  `confirm-reschedule/<id_request>/` link, so anyone who can read the logs could replay a still-valid link. The
+  requester confirmed this independently. I introduced this defect in the first fix commit.
+- **Correction:** the warning now logs the non-secret row primary key:
+  `logger.warning(f"Reschedule {reschedule_history.pk} rejected: ...")`. Behaviour, status code and scheduling logic
+  are unchanged.
+- **Test:** `test_rejection_log_omits_confirmation_token` captures `appointment.views` WARNING output for a rejected
+  confirmation. It asserts exactly one rejection line, that the line contains `Reschedule <pk> rejected`, and that
+  the token string appears in no captured line.
+- **Red (before the correction):**
+  `manage.py test appointment.tests.test_reschedule_unavailability_guard.ConfirmRescheduleUnavailabilityGuardTests.test_rejection_log_omits_confirmation_token`
+  → Ran 1, FAILED (failures=1):
+  `AssertionError: 'Reschedule 1 rejected' not found in 'WARNING:appointment.views:Reschedule <synthetic 48-char token> rejected: ...'`
+  (the token from the synthetic test DB is shortened here).
+- **Green (after the correction):** guard tests Ran 11 OK; incident tests Ran 7 OK (file unmodified); full suite
+  Ran 587, OK (skipped=3). Rejection warnings in the full-suite log now read `Reschedule 1 rejected` / `Reschedule 2
+  rejected`.
+- **Not changed (out of scope, pre-existing upstream):** `views.py:558` in `prepare_reschedule_appointment` logs the
+  appointment request's `id_request` at ERROR level. That value is also part of client-facing URLs, so it is the same
+  class of exposure. Recommended as a separate follow-up.
