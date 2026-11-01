@@ -1,0 +1,67 @@
+name: Synthetic demo incident
+description: Report a synthetic scheduling incident for the demo rehearsal. Synthetic data only.
+title: "[INC] "
+labels:
+  - demo-rehearsal
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Synthetic incident only.** Do not include patient, client or real customer data,
+        real names, emails, phone numbers, or confirmation/reset links or tokens.
+        A human applies the `devin-investigate` label after triage; it is not applied automatically.
+  - type: textarea
+    id: symptom
+    attributes:
+      label: Symptom
+      description: What went wrong, as observed.
+      placeholder: A confirmed reschedule moved an appointment into time the staff member had blocked.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What should have happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction sequence
+      description: Numbered steps using synthetic records. Redact any tokens or links.
+      placeholder: |
+        1. Synthetic client requests reschedule to <date> 10:00-11:00 with staff member A.
+        2. Staff member A adds unavailability <date> 10:00-11:00.
+        3. Client opens the confirmation link (<redacted>).
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Who or what is affected and how severely (synthetic scenario).
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Branch and commit SHA, Python version, lock file, settings module.
+      placeholder: demo/ready @ <sha>, Python 3.12, demo-requirements.lock, appointments.demo_settings
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Observable conditions (ideally tests) that define the incident as resolved.
+    validations:
+      required: true
+  - type: checkboxes
+    id: synthetic
+    attributes:
+      label: Data confirmation
+      options:
+        - label: This report contains only synthetic data and no real tokens, links or personal data.
+          required: true
