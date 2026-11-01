@@ -104,6 +104,16 @@ def check_day_off_for_staff(staff_member, date) -> bool:
     return DayOff.objects.filter(staff_member=staff_member, start_date__lte=date, end_date__gte=date).exists()
 
 
+def staff_unavailability_overlaps(staff_member, date, start_time, end_time) -> bool:
+    """Check if any of the staff member's unavailabilities on the given date overlap [start_time, end_time).
+
+    Intervals are half-open: a block ending exactly at start_time or starting exactly at end_time is adjacent and
+    does not overlap.
+    """
+    return Unavailability.objects.filter(staff_member=staff_member, date=date, start_time__lt=end_time,
+                                         end_time__gt=start_time).exists()
+
+
 def create_and_save_appointment(ar, client_data: dict, appointment_data: dict, request):
     """Create and save a new appointment based on the provided appointment request and client data.
 
