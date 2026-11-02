@@ -1,0 +1,25 @@
+# commit: 06ed831fd0001f105ea5bdb3b55ce49348256ad4 (branch devin/1793658653-inc2-stale-reschedule-confirmation)
+# python: Python 3.12.16
+# command: DJANGO_SETTINGS_MODULE=appointments.demo_settings .venv/bin/python manage.py test demo/evidence/INC-2 --pattern="probe_*.py" -v 2
+Warning: EMAIL_HOST_USER or EMAIL_HOST_PASSWORD is not set. Email functionality may be limited.
+Warning: ADMIN_EMAIL is not set. Error emails will not be sent to administrators.
+Found 3 test(s).
+Creating test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+  Synchronize unmigrated apps: appointments, messages, staticfiles
+    Running deferred SQL...
+System check identified no issues (0 silenced).
+test_probe_day_off_added_after_request (probe_related_risks.RelatedRiskProbes.test_probe_day_off_added_after_request) ... 
+OBSERVED R1 day-off added before confirmation: status=302 moved=True notified=True -> REPRODUCED
+ok
+test_probe_other_booking_added_after_request (probe_related_risks.RelatedRiskProbes.test_probe_other_booking_added_after_request) ... 
+OBSERVED R2 overlapping appointment booked before confirmation: status=302 moved=True notified=True -> REPRODUCED
+ok
+test_probe_submit_into_already_blocked_hour (probe_related_risks.RelatedRiskProbes.test_probe_submit_into_already_blocked_hour) ... 
+OBSERVED R3 submit into already-blocked hour: status=200 pending_created=True email_sent=True -> REPRODUCED
+ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.046s
+
+OK
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
