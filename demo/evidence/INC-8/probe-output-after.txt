@@ -1,0 +1,74 @@
+# commit: de786f06afd554dbe42c39308b78aad0d8b9d1cc (fix applied) + probe file
+# python: Python 3.12.16
+# command: .venv/bin/python manage.py test demo/evidence/INC-8 --pattern='probe_*.py' -v 2
+Warning: EMAIL_HOST_USER or EMAIL_HOST_PASSWORD is not set. Email functionality may be limited.
+Warning: ADMIN_EMAIL is not set. Error emails will not be sent to administrators.
+[02/Nov/2026 23:40:56] WARNING appointment.settings:initialize_django_q:96 - django-q is not in INSTALLED_APPS. Async tasks will not be available.
+Found 3 test(s).
+Creating test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+Operations to perform:
+  Synchronize unmigrated apps: appointments, messages, staticfiles
+  Apply all migrations: admin, appointment, auth, contenttypes, recurrence, sessions
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying auth.0001_initial... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying appointment.0001_initial... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying recurrence.0001_initial... OK
+  Applying recurrence.0002_alter_date_id_alter_param_id_alter_recurrence_id_and_more... OK
+  Applying sessions.0001_initial... OK
+System check identified no issues (0 silenced).
+test_issue_confirm_after_appointment_deleted (probe_deleted_appointment.DeletedAppointmentProbe.test_issue_confirm_after_appointment_deleted) ... 
+OBSERVED issue: status=404 request_moved=False history_status=pending notify_calls=0
+ok
+test_related_confirm_after_target_staff_deleted (probe_deleted_appointment.DeletedAppointmentProbe.test_related_confirm_after_target_staff_deleted) ... 
+OBSERVED staff-deleted: status=302 request_staff_is_none=True history_status=confirmed notify_calls=1
+FAIL
+test_related_submit_after_appointment_deleted (probe_deleted_appointment.DeletedAppointmentProbe.test_related_submit_after_appointment_deleted) ... 
+OBSERVED submit: status=500 histories_created=1 emails_sent=0
+FAIL
+
+======================================================================
+FAIL: test_related_confirm_after_target_staff_deleted (probe_deleted_appointment.DeletedAppointmentProbe.test_related_confirm_after_target_staff_deleted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/ubuntu/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/unittest/mock.py", line 1396, in patched
+    return func(*newargs, **newkeywargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "demo/evidence/INC-8/probe_deleted_appointment.py", line 73, in test_related_confirm_after_target_staff_deleted
+    self.assertIsNotNone(self.original.staff_member_id)
+AssertionError: unexpectedly None
+
+======================================================================
+FAIL: test_related_submit_after_appointment_deleted (probe_deleted_appointment.DeletedAppointmentProbe.test_related_submit_after_appointment_deleted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/ubuntu/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/unittest/mock.py", line 1396, in patched
+    return func(*newargs, **newkeywargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "demo/evidence/INC-8/probe_deleted_appointment.py", line 60, in test_related_submit_after_appointment_deleted
+    self.assertNotEqual(response.status_code, 500)
+AssertionError: 500 == 500
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.045s
+
+FAILED (failures=2)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
