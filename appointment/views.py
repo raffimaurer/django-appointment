@@ -655,6 +655,12 @@ def confirm_reschedule(request, id_request):
         return render(request, template, status=409, context=context)
 
     ar = reschedule_history.appointment_request
+    appointment = Appointment.objects.select_related('client').filter(appointment_request=ar).first()
+    if appointment is None:
+        error_message = _("O-o-oh! The appointment for this reschedule request no longer exists.")
+        context = get_generic_context_with_extra(request, {"error_message": error_message}, admin=False)
+        template = get_custom_template('404_not_found.html', 'error_pages/404_not_found.html')
+        return render(request, template, status=404, context=context)
 
     # Store previous details for logging or other purposes
     previous_details = {
@@ -680,7 +686,6 @@ def confirm_reschedule(request, id_request):
 
     messages.success(request, _("Appointment rescheduled successfully"))
     # notify admin and the concerned staff admin about client's rescheduling
-    client_name = Appointment.objects.get(appointment_request=ar).client.get_full_name()
-    notify_admin_about_reschedule(reschedule_history, ar, client_name)
-    allow_thank_you_page(request, ar.appointment)
-    return redirect('appointment:default_thank_you', appointment_id=ar.appointment.id)
+    notify_admin_about_reschedule(reschedule_history, ar, appointment.client.get_full_name())
+    allow_thank_you_page(request, appointment)
+    return redirect('appointment:default_thank_you', appointment_id=appointment.id)
