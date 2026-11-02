@@ -94,10 +94,12 @@ code-quality or flag findings, and the Devin Review check passed. It added 2 *in
    adding a new template, which is beyond this narrow fix, so it is escalated for human decision and not fixed.
 
 Devin Review on the docs commit `0ae6f49` again found **0** bug, security or code-quality findings (check passed). It repeated the same 2 info notes and
-added 1 *flag*: *incident report absent from site navigation (`mkdocs.yml`)*. This is escalated without a change. The report is an
-internal record that the PR and the issue link to directly. Adding it to the published docs sidebar is a human documentation decision.
-The docs workflow only targets `main` and mkdocs is not in strict mode, so nothing breaks
+added 1 *flag*: *incident report absent from site navigation (`mkdocs.yml`)*. I first escalated this without a change
 ([PR comment](https://github.com/raffimaurer/django-appointment/pull/6#issuecomment-6589637014)).
+That comment wrongly said mkdocs is not in strict mode. `mkdocs.yml` doesn't set `strict`, but `docs.yml` runs `mkdocs build --strict`
+on pushes and PRs to `main`. A page left out of the nav is only an INFO message, so the conclusion still held.
+**Human-directed correction:** the maintainer then asked for the report to be in the nav, so `mkdocs.yml` now has an *Incidents* section.
+A local `mkdocs build --strict` with `requirements-docs.txt` passes. Auto-Fix did not make this change.
 
 Info and flag notes are not part of the triage set (`report_triage` rejected them as unknown IDs). They were answered in PR comments instead ([round 1](https://github.com/raffimaurer/django-appointment/pull/6#issuecomment-6589601460)).
 **Auto-Fix:** the review notification said Auto-Fix was enabled, but it had no actionable findings. No automatic commits were
