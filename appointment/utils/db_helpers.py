@@ -578,6 +578,19 @@ def get_unavailabilities_for_date_and_time(date, start_time, end_time, staff_mem
                                          )
 
 
+def has_overlapping_unavailability(date, start_time, end_time, staff_member) -> bool:
+    """Check whether the staff member has an unavailability overlapping ``[start_time, end_time)`` on ``date``.
+
+    Intervals are half-open, so a block that only touches the boundary (e.g. ends at ``start_time``) does not overlap.
+    """
+    return Unavailability.objects.filter(
+        staff_member=staff_member,
+        date=date,
+        start_time__lt=end_time,
+        end_time__gt=start_time,
+    ).exists()
+
+
 def get_config():
     """Returns the configuration object from the database or the cache."""
     config = cache.get(CONFIG_CACHE_KEY)
