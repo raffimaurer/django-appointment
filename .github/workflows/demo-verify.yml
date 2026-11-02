@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - demo/ready
+      - demo/stable
   workflow_dispatch:
 
 permissions:
