@@ -93,7 +93,13 @@ code-quality or flag findings, and the Devin Review check passed. It added 2 *in
    cosmetic. The message body explains the conflict. The existing invalid-link path reuses the same template. Fixing it means
    adding a new template, which is beyond this narrow fix, so it is escalated for human decision and not fixed.
 
-Info notes are not part of the triage set (`report_triage` rejected them as unknown IDs). They were answered in a PR comment instead.
+Devin Review on the docs commit `0ae6f49` again found **0** bug, security or code-quality findings (check passed). It repeated the same 2 info notes and
+added 1 *flag*: *incident report absent from site navigation (`mkdocs.yml`)*. This is escalated without a change. The report is an
+internal record that the PR and the issue link to directly. Adding it to the published docs sidebar is a human documentation decision.
+The docs workflow only targets `main` and mkdocs is not in strict mode, so nothing breaks
+([PR comment](https://github.com/raffimaurer/django-appointment/pull/6#issuecomment-6589637014)).
+
+Info and flag notes are not part of the triage set (`report_triage` rejected them as unknown IDs). They were answered in PR comments instead ([round 1](https://github.com/raffimaurer/django-appointment/pull/6#issuecomment-6589601460)).
 **Auto-Fix:** the review notification said Auto-Fix was enabled, but it had no actionable findings. No automatic commits were
 made and the branch contains only commits authored in this session. No corrections were needed in this round, human-directed or automatic.
 
@@ -133,4 +139,10 @@ made and the branch contains only commits authored in this session. No correctio
   results for the latest documentation-only commit are reported in the PR description and the final issue reply.
 
 ## Final verification status
-_Pending. This section is updated after CI and review run on the documentation commit._
+| Commit | demo-verify (hosted) | Artifact | CodeQL | Devin Review |
+|---|---|---|---|---|
+| [`2efced5`](https://github.com/raffimaurer/django-appointment/commit/2efced579aa185e70119bf49aa41d0adfef6a866) fix | [run 41533580188](https://github.com/raffimaurer/django-appointment/actions/runs/41533580188): success, Ran 583, OK (skipped=3) | [13182313919](https://github.com/raffimaurer/django-appointment/actions/runs/41533580188/artifacts/13182313919) downloaded and inspected | success | passed: 0 bug/security, 2 info (escalated) |
+| [`0ae6f49`](https://github.com/raffimaurer/django-appointment/commit/0ae6f4935d946ccc692900d54f4669b90c2f8859) docs | [run 41533895636](https://github.com/raffimaurer/django-appointment/actions/runs/41533895636): success, Ran 583, OK (skipped=3) | [13183276133](https://github.com/raffimaurer/django-appointment/actions/runs/41533895636/artifacts/13183276133): metadata only (sha256 `47445697…`). The zip download was blocked by the session network allowlist (a different blob host, approval pending), so the job log was inspected instead: same 3 skips, 14/14 incident tests ok | success | passed: 0 bug/security, 2 info + 1 flag (escalated) |
+
+The CI and review results for the commit that adds this table are in the PR description and the final issue reply.
+The PR stays **draft and unmerged**. Nothing was deployed.
