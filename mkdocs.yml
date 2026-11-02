@@ -128,6 +128,9 @@ nav:
       - Contributing: contributing.md
       - Code of conduct: code-of-conduct.md
       - Security policy: security.md
+  - Incidents:
+      - Incident index: incidents/README.md
+      - INC-2 stale reschedule confirmation: incidents/INC-2-stale-reschedule-confirmation.md
 
 extra:
   social:
