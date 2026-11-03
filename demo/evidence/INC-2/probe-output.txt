@@ -1,0 +1,15 @@
+# Captured 2026-11-03T22:54:00Z on branch devin/1793746272-inc-2-confirm-reschedule-blocked-hour with fix commit 09e5310 applied, Python 3.12.16, appointments.demo_settings
+# Command: DJANGO_SETTINGS_MODULE=appointments.demo_settings .venv/bin/python demo/evidence/INC-2/probe_related_risks.py (INFO/WARNING/ERROR log lines filtered)
+Creating test database for alias 'default'...
+PROBE P1 reschedule submit into already-blocked hour: RISK - status=200 pending_created=True email_sent=True (confirmation is now rejected by the INC-2 fix, but the hold and email still happen)
+.PROBE P2 confirm after DayOff added: RISK - status=302 moved=True
+.PROBE P3 confirm into slot booked by another client: RISK - status=302 moved=True
+.PROBE P4 confirm after working hours removed for that weekday: RISK - status=302 moved=True
+.PROBE P5 slot listing offers 11:00 right after a 10:00-11:00 block: ok - 09:00 offered=True 11:00 offered=True
+PROBE P6 after a rejected confirmation, reschedule page is locked (limit=1): RISK - confirm_status=409 reschedule_page_status=403 (pending row is preserved, so it counts toward the 5-minute limit)
+.
+----------------------------------------------------------------------
+Ran 6 tests in 0.073s
+
+OK
+Destroying test database for alias 'default'...
