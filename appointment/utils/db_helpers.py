@@ -601,6 +601,14 @@ def get_day_off_by_id(day_off_id):
         return None
 
 
+def has_overlapping_unavailability(staff_member, date, start_time, end_time) -> bool:
+    """Whether the staff member has an unavailability overlapping the half-open interval [start_time, end_time)
+    on the given date. Touching boundaries do not count as an overlap.
+    """
+    return Unavailability.objects.filter(staff_member=staff_member, date=date,
+                                         start_time__lt=end_time, end_time__gt=start_time).exists()
+
+
 def get_unavailability_by_id(unavailability_id):
     """Get a unavailability by its ID.
 
