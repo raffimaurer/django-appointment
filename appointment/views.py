@@ -659,8 +659,7 @@ def confirm_reschedule(request, id_request):
 
     with transaction.atomic():
         # The appointment may have been deleted while the reschedule was pending; check before mutating anything.
-        appointment = Appointment.objects.select_for_update().select_related('client').filter(
-            appointment_request=ar).first()
+        appointment = Appointment.objects.select_for_update().filter(appointment_request=ar).first()
         if appointment is None:
             error_message = _("Sorry, this appointment no longer exists, so it can't be rescheduled.")
             context = get_generic_context_with_extra(request, {"error_message": error_message}, admin=False)
