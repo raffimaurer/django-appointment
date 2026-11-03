@@ -131,6 +131,7 @@ nav:
   - Incidents:
       - Incident index: incidents/README.md
       - INC-2 stale reschedule confirmation: incidents/INC-2-stale-reschedule-confirmation.md
+      - INC-8 deleted appointment reschedule confirmation: incidents/INC-8-deleted-appointment-reschedule-confirmation.md
 
 extra:
   social:

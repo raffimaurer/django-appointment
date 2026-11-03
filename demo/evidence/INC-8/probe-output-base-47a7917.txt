@@ -1,0 +1,90 @@
+Found 4 test(s).
+Creating test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+Operations to perform:
+  Synchronize unmigrated apps: appointments, messages, staticfiles
+  Apply all migrations: admin, appointment, auth, contenttypes, recurrence, sessions
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+System check identified no issues (0 silenced).
+test_confirm_after_appointment_deleted_issue_8 (probe_related_risks.RelatedRiskProbe.test_confirm_after_appointment_deleted_issue_8) ... 
+[probe] issue #8: confirm after appointment deleted: unhandled DoesNotExist; request staff=1 date=2026-11-10 start=14:00:00; histories=['confirmed']
+FAIL
+test_confirm_after_client_user_deleted (probe_related_risks.RelatedRiskProbe.test_confirm_after_client_user_deleted) ... 
+[probe] confirm after client user deleted: unhandled AttributeError; request staff=1 date=2026-11-10 start=14:00:00; histories=['confirmed']
+FAIL
+test_confirm_after_target_staff_member_deleted (probe_related_risks.RelatedRiskProbe.test_confirm_after_target_staff_member_deleted) ... 
+[probe] confirm after target staff member deleted: 302; request staff=None date=2026-11-10 start=14:00:00; histories=['confirmed']
+FAIL
+test_submit_after_appointment_deleted (probe_related_risks.RelatedRiskProbe.test_submit_after_appointment_deleted) ... 
+[probe] submit after appointment deleted: unhandled DoesNotExist; request staff=1 date=2026-11-09 start=09:00:00; histories=['pending']
+FAIL
+
+======================================================================
+FAIL: test_confirm_after_appointment_deleted_issue_8 (probe_related_risks.RelatedRiskProbe.test_confirm_after_appointment_deleted_issue_8)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<python>/lib/python3.12/unittest/mock.py", line 1396, in patched
+    return func(*newargs, **newkeywargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<repo>/demo/evidence/INC-8/probe_related_risks.py", line 53, in test_confirm_after_appointment_deleted_issue_8
+    self.assertEqual((self.original.date, self.original.start_time), (self.day - timedelta(days=1), time(9)))
+AssertionError: Tuples differ: (datetime.date(2026, 11, 10), datetime.time(14, 0)) != (datetime.date(2026, 11, 9), datetime.time(9, 0))
+
+First differing element 0:
+datetime.date(2026, 11, 10)
+datetime.date(2026, 11, 9)
+
+- (datetime.date(2026, 11, 10), datetime.time(14, 0))
+?                          ^^                 ^^
+
++ (datetime.date(2026, 11, 9), datetime.time(9, 0))
+?                          ^                 ^
+
+
+======================================================================
+FAIL: test_confirm_after_client_user_deleted (probe_related_risks.RelatedRiskProbe.test_confirm_after_client_user_deleted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<python>/lib/python3.12/unittest/mock.py", line 1396, in patched
+    return func(*newargs, **newkeywargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<repo>/demo/evidence/INC-8/probe_related_risks.py", line 74, in test_confirm_after_client_user_deleted
+    self.assertNotIsInstance(status, str)
+AssertionError: 'unhandled AttributeError' is an instance of <class 'str'>
+
+======================================================================
+FAIL: test_confirm_after_target_staff_member_deleted (probe_related_risks.RelatedRiskProbe.test_confirm_after_target_staff_member_deleted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<python>/lib/python3.12/unittest/mock.py", line 1396, in patched
+    return func(*newargs, **newkeywargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<repo>/demo/evidence/INC-8/probe_related_risks.py", line 87, in test_confirm_after_target_staff_member_deleted
+    self.assertNotEqual(status, 302, 'confirmation succeeded with no staff member')
+AssertionError: 302 == 302 : confirmation succeeded with no staff member
+
+======================================================================
+FAIL: test_submit_after_appointment_deleted (probe_related_risks.RelatedRiskProbe.test_submit_after_appointment_deleted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<python>/lib/python3.12/unittest/mock.py", line 1396, in patched
+    return func(*newargs, **newkeywargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<repo>/demo/evidence/INC-8/probe_related_risks.py", line 65, in test_submit_after_appointment_deleted
+    self.assertEqual(rows, [], 'a pending reschedule row was created for a deleted appointment')
+AssertionError: Lists differ: ['pending'] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+'pending'
+
+- ['pending']
++ [] : a pending reschedule row was created for a deleted appointment
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.050s
+
+FAILED (failures=4)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

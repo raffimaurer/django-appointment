@@ -11,6 +11,7 @@ from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.forms import SetPasswordForm
+from django.db import transaction
 from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
@@ -656,31 +657,40 @@ def confirm_reschedule(request, id_request):
 
     ar = reschedule_history.appointment_request
 
-    # Store previous details for logging or other purposes
-    previous_details = {
-        'date': ar.date,
-        'start_time': ar.start_time,
-        'end_time': ar.end_time,
-        'staff_member': ar.staff_member,
-    }
+    with transaction.atomic():
+        # The appointment may have been deleted while the reschedule was pending; check before mutating anything.
+        appointment = Appointment.objects.select_for_update().filter(appointment_request=ar).first()
+        if appointment is None:
+            error_message = _("Sorry, this appointment no longer exists, so it can't be rescheduled.")
+            context = get_generic_context_with_extra(request, {"error_message": error_message}, admin=False)
+            template = get_custom_template('404_not_found.html', 'error_pages/404_not_found.html')
+            return render(request, template, status=404, context=context)
 
-    # Update AppointmentRequest with new details
-    ar.date = reschedule_history.date
-    ar.start_time = reschedule_history.start_time
-    ar.end_time = reschedule_history.end_time
-    ar.staff_member = reschedule_history.staff_member
-    ar.save(update_fields=['date', 'start_time', 'end_time', 'staff_member'])
+        # Store previous details for logging or other purposes
+        previous_details = {
+            'date': ar.date,
+            'start_time': ar.start_time,
+            'end_time': ar.end_time,
+            'staff_member': ar.staff_member,
+        }
 
-    reschedule_history.date = previous_details['date']
-    reschedule_history.start_time = previous_details['start_time']
-    reschedule_history.end_time = previous_details['end_time']
-    reschedule_history.staff_member = previous_details['staff_member']
-    reschedule_history.reschedule_status = 'confirmed'
-    reschedule_history.save(update_fields=['date', 'start_time', 'end_time', 'staff_member', 'reschedule_status'])
+        # Update AppointmentRequest with new details
+        ar.date = reschedule_history.date
+        ar.start_time = reschedule_history.start_time
+        ar.end_time = reschedule_history.end_time
+        ar.staff_member = reschedule_history.staff_member
+        ar.save(update_fields=['date', 'start_time', 'end_time', 'staff_member'])
+
+        reschedule_history.date = previous_details['date']
+        reschedule_history.start_time = previous_details['start_time']
+        reschedule_history.end_time = previous_details['end_time']
+        reschedule_history.staff_member = previous_details['staff_member']
+        reschedule_history.reschedule_status = 'confirmed'
+        reschedule_history.save(update_fields=['date', 'start_time', 'end_time', 'staff_member', 'reschedule_status'])
 
     messages.success(request, _("Appointment rescheduled successfully"))
     # notify admin and the concerned staff admin about client's rescheduling
-    client_name = Appointment.objects.get(appointment_request=ar).client.get_full_name()
+    client_name = appointment.client.get_full_name()
     notify_admin_about_reschedule(reschedule_history, ar, client_name)
-    allow_thank_you_page(request, ar.appointment)
-    return redirect('appointment:default_thank_you', appointment_id=ar.appointment.id)
+    allow_thank_you_page(request, appointment)
+    return redirect('appointment:default_thank_you', appointment_id=appointment.id)
