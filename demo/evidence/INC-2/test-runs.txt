@@ -1,0 +1,38 @@
+# INC-2 local test runs (Python 3.12.16, demo-requirements.lock verified against installed packages,
+# DJANGO_SETTINGS_MODULE=appointments.demo_settings, SQLite test DB, locmem email).
+# Summary lines copied from the actual runner output; INFO/WARNING log lines omitted.
+
+## Baseline: demo/ready @ 757f2517de2d1728f211f8890939d8800fd39051 (unmodified)
+$ .venv/bin/python manage.py test appointment.tests.test_incident_reschedule -v 2
+FAIL: test_confirmation_rejects_new_block_without_mutation
+FAIL: test_partial_overlap_rejected
+FAIL: test_real_submit_then_block_then_confirm
+Ran 7 tests in 0.095s
+FAILED (failures=3)
+
+$ .venv/bin/python manage.py test appointment
+FAIL: test_confirmation_rejects_new_block_without_mutation
+FAIL: test_partial_overlap_rejected
+FAIL: test_real_submit_then_block_then_confirm
+Ran 576 tests in 4.190s
+FAILED (failures=3, skipped=3)
+
+## New regression tests against unmodified production code (test file only, before the fix)
+$ .venv/bin/python manage.py test appointment.tests.test_inc2_reschedule_block_regression -v 2
+FAIL: test_block_containing_slot_rejected
+FAIL: test_block_inside_slot_rejected
+FAIL: test_block_overlapping_start_rejected
+FAIL: test_exact_block_rejected_without_side_effects
+FAIL: test_rejected_link_confirms_after_block_removed
+Ran 11 tests in 0.142s
+FAILED (failures=5)
+# each failure: AssertionError: 302 != 409
+
+## After fix: commit 09e531009bf86c016c31cfb1cfba7cf384e0f72d
+$ .venv/bin/python manage.py test appointment.tests.test_incident_reschedule appointment.tests.test_inc2_reschedule_block_regression -v 2
+Ran 18 tests in 0.181s
+OK
+
+$ .venv/bin/python manage.py test appointment
+Ran 587 tests in 4.198s
+OK (skipped=3)
