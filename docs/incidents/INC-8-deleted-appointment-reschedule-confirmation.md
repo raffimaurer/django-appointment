@@ -33,8 +33,9 @@ SQLite, locmem mail. `manage.py check`, `makemigrations appointment` and `migrat
 | Fix `df96eb4` | 7 passed | 14 passed | `Ran 590 tests` `OK (skipped=3)`: 587 passed, 0 failed, 3 skipped |
 | Review fix `28b2d79` | 7 passed | 14 passed | `Ran 590 tests` `OK (skipped=3)`: 587 passed, 0 failed, 3 skipped |
 
-The two errors are the reported `Appointment.DoesNotExist` from `confirm_reschedule`; the failure is the partial write
-(request moved although the history write failed). The probe `test_confirm_after_appointment_deleted_issue_8` prints
+The two errors are the reported `Appointment.DoesNotExist` from `confirm_reschedule`, raised after both writes had
+committed. The one failure is the synthetic `test_failed_history_write_rolls_back_request_move`: with the history save
+patched to raise, the request had still moved, showing the writes were not atomic. The probe `test_confirm_after_appointment_deleted_issue_8` prints
 the surviving rows on base: request moved to the new date/time, history `['confirmed']`
 ([base output](https://github.com/raffimaurer/django-appointment/blob/devin/1793746268-inc-8-orphaned-reschedule-confirmation/demo/evidence/INC-8/probe-output-base-47a7917.txt)).
 The 3 skips are the pre-existing Django-Q tests, unchanged throughout.
