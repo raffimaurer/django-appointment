@@ -83,6 +83,6 @@ class RelatedRiskProbes(BaseTest):
                                       start_time=time(10), end_time=time(11))
         status, _ = self.confirm(p)
         from appointment.utils.db_helpers import can_appointment_be_rescheduled
-        allowed = can_appointment_be_rescheduled(self.ar)
-        report('rejected_request_counts_toward_limit', status == 409 and not allowed,
-               f'confirm_status={status} can_reschedule_again_within_5_min={allowed}')
+        retry_flag = 'True' if can_appointment_be_rescheduled(self.ar) else 'False'
+        report('rejected_request_counts_toward_limit', status == 409 and retry_flag == 'False',
+               f'confirm_status={status} can_reschedule_again_within_5_min={retry_flag}')
