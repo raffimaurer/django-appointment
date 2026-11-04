@@ -1,0 +1,34 @@
+# Command: DJANGO_SETTINGS_MODULE=appointments.demo_settings .venv/bin/python manage.py test demo/evidence/INC-2 --pattern="probe_*.py" -v 2
+# Python 3.12.16, demo-requirements.lock, on fix commit c83ff48 (INFO/WARNING log lines and migration lines stripped)
+Found 5 test(s).
+Creating test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+Operations to perform:
+  Synchronize unmigrated apps: appointments, messages, staticfiles
+  Apply all migrations: admin, appointment, auth, contenttypes, recurrence, sessions
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+System check identified no issues (0 silenced).
+test_probe_day_off_added_after_request ... 
+PROBE day_off_after_request: REPRODUCED - status=302 moved_into_day_off=True
+ok
+test_probe_other_booking_overlaps ... 
+PROBE other_booking_overlap: REPRODUCED - status=302 moved_onto_existing_booking=True
+ok
+test_probe_pending_without_staff_member_skips_check ... 
+PROBE pending_staff_member_null: REPRODUCED - status=302 moved=True staff_member_cleared=True
+ok
+test_probe_rejected_request_consumes_reschedule_limit ... 
+
+PROBE rejected_request_counts_toward_limit: REPRODUCED - confirm_status=409 can_reschedule_again_within_5_min=False
+ok
+test_probe_submit_into_already_blocked_hour ... 
+PROBE submit_into_blocked_hour: REPRODUCED - status=200 pending_created=True confirmation_link_sent=True
+ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.057s
+
+OK
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
