@@ -124,6 +124,9 @@ nav:
       - Older documentation:
           - Version 3.0.1: history/readme_v3_0_1.md
           - Version 2.1.1: history/readme_v2_1_1.md
+  - Incidents:
+      - Overview: incidents/README.md
+      - "INC-2: Stale reschedule confirmation": incidents/INC-2-stale-reschedule-confirm-blocked-hour.md
   - Project:
       - Contributing: contributing.md
       - Code of conduct: code-of-conduct.md
