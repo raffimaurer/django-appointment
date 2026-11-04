@@ -11,7 +11,6 @@ from appointment.tests.base.base_test import BaseTest
 from appointment.views import THANK_YOU_SESSION_KEY
 
 
-
 class RescheduleConfirmationBlockedTimeTests(BaseTest):
     """Synthetic regression coverage for issue #2: confirming a pending reschedule into time the staff member
     blocked after the request was submitted."""
