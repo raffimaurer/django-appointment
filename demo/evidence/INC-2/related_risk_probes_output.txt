@@ -1,0 +1,16 @@
+Warning: EMAIL_HOST_USER or EMAIL_HOST_PASSWORD is not set. Email functionality may be limited.
+Warning: ADMIN_EMAIL is not set. Error emails will not be sent to administrators.
+[04/Nov/2026 08:51:44] WARNING appointment.settings:initialize_django_q:96 - django-q is not in INSTALLED_APPS. Async tasks will not be available.
+PROBE confirm-after-day-off: status=302 moved_into_target=True notified=True
+.PROBE confirm-into-other-booking: status=302 moved_into_target=True notified=True
+.PROBE confirm-after-working-hours-removed: status=302 moved_into_target=True notified=True
+.PROBE submit-into-blocked-hour: status=200 pending_created=True email_sent=True
+.[04/Nov/2026 08:51:45] INFO appointment.utils.db_helpers:can_appointment_be_rescheduled:231 - Rescheduling is allowed for service Stargate Activation -> Reschedule count: 1, Reschedule limit: 1
+[04/Nov/2026 08:51:45] ERROR appointment.views:prepare_reschedule_appointment:559 - Appointment with id_request <redacted> cannot be rescheduled
+PROBE reschedule-page-after-rejection: confirm[status=409 moved_into_target=False notified=False] then reschedule_page=403
+.PROBE confirm-with-null-staff-member: status=302 moved_into_target=True notified=True
+.
+----------------------------------------------------------------------
+Ran 6 tests in 0.123s
+
+OK

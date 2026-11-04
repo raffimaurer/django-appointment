@@ -1,0 +1,89 @@
+# Issue #2 local test evidence (synthetic data)
+# Base: demo/ready @ 757f2517de2d1728f211f8890939d8800fd39051
+# Python 3.12.16, demo-requirements.lock, DJANGO_SETTINGS_MODULE=appointments.demo_settings, SQLite test DB, locmem email
+# Extracted from full -v 2 / default-verbosity output: per-test status lines, failure headers, assertion messages and totals.
+# Token-like id_request values are not included.
+
+## 1. BASELINE (unmodified base) incident tests
+$ DJANGO_SETTINGS_MODULE=appointments.demo_settings .venv/bin/python manage.py test appointment.tests.test_incident_reschedule -v 2
+appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_adjacent_block_allowed ... ok
+appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_confirmation_rejects_new_block_without_mutation ... FAIL
+appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_other_staff_block_allowed ... ok
+appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_partial_overlap_rejected ... FAIL
+appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_real_submit_then_block_then_confirm ... FAIL
+appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_slot_listing_hides_new_block ... ok
+appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_unblocked_confirmation_still_works ... ok
+FAIL: test_confirmation_rejects_new_block_without_mutation (appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_confirmation_rejects_new_block_without_mutation)
+AssertionError: Tuples differ: (datetime.date(2026, 11, 11), datetime.time(10, 0), datetime.time(11, 0), 1) != (datetime.date(2026, 11, 10), datetime.time(9, 0), datetime.time(10, 0), 1)
+FAIL: test_partial_overlap_rejected (appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_partial_overlap_rejected)
+AssertionError: datetime.date(2026, 11, 11) != datetime.date(2026, 11, 10)
+FAIL: test_real_submit_then_block_then_confirm (appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_real_submit_then_block_then_confirm)
+AssertionError: datetime.date(2026, 11, 11) != datetime.date(2026, 11, 10)
+Ran 7 tests in 0.215s
+FAILED (failures=3)
+
+## 2. BASELINE (unmodified base) full suite
+$ DJANGO_SETTINGS_MODULE=appointments.demo_settings .venv/bin/python manage.py test appointment
+FAIL: test_confirmation_rejects_new_block_without_mutation (appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_confirmation_rejects_new_block_without_mutation)
+AssertionError: Tuples differ: (datetime.date(2026, 11, 11), datetime.time(10, 0), datetime.time(11, 0), 1) != (datetime.date(2026, 11, 10), datetime.time(9, 0), datetime.time(10, 0), 1)
+FAIL: test_partial_overlap_rejected (appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_partial_overlap_rejected)
+AssertionError: datetime.date(2026, 11, 11) != datetime.date(2026, 11, 10)
+FAIL: test_real_submit_then_block_then_confirm (appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_real_submit_then_block_then_confirm)
+AssertionError: datetime.date(2026, 11, 11) != datetime.date(2026, 11, 10)
+Ran 576 tests in 4.217s
+FAILED (failures=3, skipped=3)
+
+## 3. NEW regression tests BEFORE the production fix (tests added, views.py/db_helpers.py unmodified)
+$ DJANGO_SETTINGS_MODULE=appointments.demo_settings .venv/bin/python manage.py test appointment.tests.test_reschedule_confirm_blocked_time -v 2
+appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_block_ending_at_slot_start_allowed ... ok
+appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_block_inside_slot_rejected ... FAIL
+appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_block_overlapping_start_rejected ... FAIL
+appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_enclosing_block_rejected ... FAIL
+appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_exact_block_rejected_and_every_field_preserved ... FAIL
+appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_expired_link_with_block_is_not_applied ... ok
+appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_rejected_link_still_works_once_block_removed ... FAIL
+appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_replay_after_confirmation_does_not_move_again ... ok
+appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_same_staff_block_on_other_date_allowed ... ok
+FAIL: test_block_inside_slot_rejected (appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_block_inside_slot_rejected)
+AssertionError: 302 != 409
+FAIL: test_block_overlapping_start_rejected (appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_block_overlapping_start_rejected)
+AssertionError: 302 != 409
+FAIL: test_enclosing_block_rejected (appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_enclosing_block_rejected)
+AssertionError: 302 != 409
+FAIL: test_exact_block_rejected_and_every_field_preserved (appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_exact_block_rejected_and_every_field_preserved)
+AssertionError: 302 != 409
+FAIL: test_rejected_link_still_works_once_block_removed (appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_rejected_link_still_works_once_block_removed)
+AssertionError: 302 != 409
+Ran 9 tests in 0.090s
+FAILED (failures=5)
+
+## 4. AFTER fix: incident + new regression tests
+$ DJANGO_SETTINGS_MODULE=appointments.demo_settings .venv/bin/python manage.py test appointment.tests.test_reschedule_confirm_blocked_time appointment.tests.test_incident_reschedule -v 2
+appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_block_ending_at_slot_start_allowed ... ok
+appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_block_inside_slot_rejected ... ok
+appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_block_overlapping_start_rejected ... ok
+appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_enclosing_block_rejected ... ok
+appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_exact_block_rejected_and_every_field_preserved ... ok
+appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_expired_link_with_block_is_not_applied ... ok
+appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_rejected_link_still_works_once_block_removed ... ok
+appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_replay_after_confirmation_does_not_move_again ... ok
+appointment.tests.test_reschedule_confirm_blocked_time.RescheduleConfirmationBlockedTimeTests.test_same_staff_block_on_other_date_allowed ... ok
+appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_adjacent_block_allowed ... ok
+appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_confirmation_rejects_new_block_without_mutation ... ok
+appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_other_staff_block_allowed ... ok
+appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_partial_overlap_rejected ... ok
+appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_real_submit_then_block_then_confirm ... ok
+appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_slot_listing_hides_new_block ... ok
+appointment.tests.test_incident_reschedule.RescheduleIncidentTests.test_unblocked_confirmation_still_works ... ok
+Ran 16 tests in 0.218s
+OK
+
+## 5. AFTER fix: incident tests only
+$ DJANGO_SETTINGS_MODULE=appointments.demo_settings .venv/bin/python manage.py test appointment.tests.test_incident_reschedule
+Ran 7 tests in 0.075s
+OK
+
+## 6. AFTER fix: full suite
+$ DJANGO_SETTINGS_MODULE=appointments.demo_settings .venv/bin/python manage.py test appointment
+Ran 585 tests in 4.826s
+OK (skipped=3)
