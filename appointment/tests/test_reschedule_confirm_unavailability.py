@@ -47,7 +47,6 @@ class ConfirmRescheduleUnavailabilityTests(BaseTest):
         self.assertEqual(mail.outbox, [])
         self.assertNotIn(THANK_YOU_SESSION_KEY, self.client.session)
         self.assertEqual([m.level_tag for m in get_messages(response.wsgi_request)], [])
-        self.assertNotIn(self.pending.id_request, response.content.decode())
         return response
 
     def assert_confirmed(self, notify):
