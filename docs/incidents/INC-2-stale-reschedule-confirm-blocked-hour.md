@@ -111,9 +111,9 @@ tested something other than this fix. Its failure message also printed the synth
 
 ## Related-risk audit (timeboxed)
 
-Probes are in [`demo/evidence/INC-2/`](https://github.com/raffimaurer/django-appointment/tree/fb07472985039f0e3b55a51a91e1e02695b60ea5/demo/evidence/INC-2)
-([script](https://github.com/raffimaurer/django-appointment/blob/fb07472985039f0e3b55a51a91e1e02695b60ea5/demo/evidence/INC-2/probe_related_risks.py),
-[output](https://github.com/raffimaurer/django-appointment/blob/fb07472985039f0e3b55a51a91e1e02695b60ea5/demo/evidence/INC-2/probe_output.txt)). They live outside
+Probes are in [`demo/evidence/INC-2/`](https://github.com/raffimaurer/django-appointment/tree/3011c126e1e748b58691467e2b2975e092616e95/demo/evidence/INC-2)
+([script](https://github.com/raffimaurer/django-appointment/blob/3011c126e1e748b58691467e2b2975e092616e95/demo/evidence/INC-2/probe_related_risks.py),
+[output](https://github.com/raffimaurer/django-appointment/blob/3011c126e1e748b58691467e2b2975e092616e95/demo/evidence/INC-2/probe_output.txt)). They live outside
 `appointment/`, so normal test discovery does not run them. Each probe records the observed behaviour and does not
 assert the desired one.
 
@@ -150,11 +150,14 @@ assert the desired one.
 - **Devin Review on `8330ad9`:** 2 findings (the race and limit consumption above). Both are **escalated** for a
   human and left open. The race needs a locking design across both write paths and a row-locking database to verify.
   The limit behaviour is a product decision, because the issue requires the pending row to be preserved.
-- **CodeQL on `8330ad9`:** 1 high alert, "Clear-text logging of sensitive information", on the probe's `print`.
-  The probe output only ever contained synthetic status flags. **Automatic correction** in
-  [`fb07472`](https://github.com/raffimaurer/django-appointment/commit/fb07472985039f0e3b55a51a91e1e02695b60ea5): the mock was renamed (`send_email` became
-  `send_confirmation`) and the staff ID was replaced with a boolean. The likely trigger was the `email` identifier,
-  but that is an inference, not confirmed.
+- **CodeQL on `8330ad9`:** 1 high alert, `py/clear-text-logging-sensitive-data`, at the probe's `print` on line 20.
+  The probe output only ever contained synthetic status flags, but the alert was treated as real and corrected
+  automatically:
+    - [`fb07472`](https://github.com/raffimaurer/django-appointment/commit/fb07472985039f0e3b55a51a91e1e02695b60ea5) renamed the `send_email` mock and replaced the
+      staff ID with a boolean. This was a guess, and the alert was still open on the next analysis (`2df1a61`).
+    - The alert instance on `2df1a61` showed the flagged source: the `can_appointment_be_rescheduled(self.ar)` result
+      on line 86. [`3011c12`](https://github.com/raffimaurer/django-appointment/commit/3011c126e1e748b58691467e2b2975e092616e95) now prints a literal `'True'`/`'False'` instead of that value. Probe
+      output is unchanged.
 - **Human-directed corrections:** none.
 - The Review and CodeQL results at the final head are recorded in the PR description.
 
@@ -177,5 +180,5 @@ assert the desired one.
 
 - Note that rendered pages echo the request path (language switcher), so "token not in body" assertions need care.
   Never let an assertion message print a token.
-- Probe `print`s can trip CodeQL's clear-text logging rule through identifier names such as `email`. Keep probe
-  output to neutral status flags.
+- Probe `print`s can trip CodeQL's clear-text logging rule. Read the alert instance (`code-scanning/alerts/<n>`) to
+  find the flagged source before changing code, and print literal flags rather than values returned by helpers.
