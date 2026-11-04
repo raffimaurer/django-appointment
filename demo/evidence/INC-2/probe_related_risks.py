@@ -52,7 +52,7 @@ class RelatedRiskProbes(BaseTest):
         report('other_booking_overlap', moved, f'status={status} moved_onto_existing_booking={moved}')
 
     @patch('appointment.views.send_reschedule_confirmation_email')
-    def test_probe_submit_into_already_blocked_hour(self, send_email, notify):
+    def test_probe_submit_into_already_blocked_hour(self, send_confirmation, notify):
         Unavailability.objects.create(staff_member=self.staff_member1, date=self.day,
                                       start_time=time(10), end_time=time(11))
         response = self.client.post(reverse('appointment:reschedule_appointment_submit'), {
@@ -60,8 +60,9 @@ class RelatedRiskProbes(BaseTest):
             'start_time': '10:00', 'end_time': '11:00', 'service': self.service1.id,
             'staff_member': self.staff_member1.id, 'reason_for_rescheduling': 'Synthetic probe'})
         created = AppointmentRescheduleHistory.objects.filter(appointment_request=self.ar).exists()
-        report('submit_into_blocked_hour', created and send_email.called,
-               f'status={response.status_code} pending_created={created} email_sent={send_email.called}')
+        link_sent = send_confirmation.called
+        report('submit_into_blocked_hour', created and link_sent,
+               f'status={response.status_code} pending_created={created} confirmation_link_sent={link_sent}')
 
     def test_probe_pending_without_staff_member_skips_check(self, notify):
         p = self.pending()
@@ -71,7 +72,7 @@ class RelatedRiskProbes(BaseTest):
         status, moved = self.confirm(p)
         self.ar.refresh_from_db()
         report('pending_staff_member_null', moved,
-               f'status={status} moved={moved} staff_member_after={self.ar.staff_member_id}')
+               f'status={status} moved={moved} staff_member_cleared={self.ar.staff_member_id is None}')
 
     def test_probe_rejected_request_consumes_reschedule_limit(self, notify):
         self.service1.reschedule_limit = 1

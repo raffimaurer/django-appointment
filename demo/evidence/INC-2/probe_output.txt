@@ -17,14 +17,14 @@ test_probe_other_booking_overlaps ...
 PROBE other_booking_overlap: REPRODUCED - status=302 moved_onto_existing_booking=True
 ok
 test_probe_pending_without_staff_member_skips_check ... 
-PROBE pending_staff_member_null: REPRODUCED - status=302 moved=True staff_member_after=None
+PROBE pending_staff_member_null: REPRODUCED - status=302 moved=True staff_member_cleared=True
 ok
 test_probe_rejected_request_consumes_reschedule_limit ... 
 
 PROBE rejected_request_counts_toward_limit: REPRODUCED - confirm_status=409 can_reschedule_again_within_5_min=False
 ok
 test_probe_submit_into_already_blocked_hour ... 
-PROBE submit_into_blocked_hour: REPRODUCED - status=200 pending_created=True email_sent=True
+PROBE submit_into_blocked_hour: REPRODUCED - status=200 pending_created=True confirmation_link_sent=True
 ok
 
 ----------------------------------------------------------------------
