@@ -33,7 +33,8 @@ from appointment.settings import check_q_cluster
 from appointment.utils.db_helpers import (
     can_appointment_be_rescheduled, check_day_off_for_staff, create_and_save_appointment,
     create_payment_info_and_get_url, get_non_working_days_for_staff, get_user_by_email, get_user_model,
-    get_website_name, get_weekday_num_from_date, is_working_day, staff_change_allowed_on_reschedule,
+    get_website_name, get_weekday_num_from_date, has_unavailability_overlap, is_working_day,
+    staff_change_allowed_on_reschedule,
     update_user_name, username_in_user_model
 )
 from appointment.utils.email_ops import notify_admin_about_appointment, notify_admin_about_reschedule, \
@@ -644,6 +645,13 @@ def confirm_reschedule(request, id_request):
         context = get_generic_context_with_extra(request, {"error_message": error_message}, admin=False)
         template = get_custom_template('404_not_found.html', 'error_pages/404_not_found.html')
         return render(request, template, status=404, context=context)
+
+    if has_unavailability_overlap(reschedule_history.staff_member, reschedule_history.date,
+                                  reschedule_history.start_time, reschedule_history.end_time):
+        error_message = _("Sorry, this time is no longer available. Please choose another time.")
+        context = get_generic_context_with_extra(request, {"error_message": error_message}, admin=False)
+        template = get_custom_template('404_not_found.html', 'error_pages/404_not_found.html')
+        return render(request, template, status=409, context=context)
 
     ar = reschedule_history.appointment_request
 
